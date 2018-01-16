@@ -16,6 +16,8 @@ class APITest(unittest.TestCase):
     def test_purge(self):
         self.assertTrue(self.api.purge_url(self.host, '/'))
 
+    @unittest.skipIf(os.environ.get('FASTLY_API_KEY') == None,
+                     "Default API Key is not authorized to run this test")
     def test_purge_by_key(self):
         self.api.deauthenticate()
         self.api.authenticate_by_key(self.api_key)
@@ -31,6 +33,8 @@ class APITest(unittest.TestCase):
         self.api.deauthenticate()
         self.assertTrue(self.api.soft_purge_url(self.host, '/'))
 
+    @unittest.skipIf(os.environ.get('FASTLY_API_KEY') == None,
+                     "Default API Key is not authorized to run this test")
     def test_soft_purge_by_key(self):
         self.api.deauthenticate()
         self.api.authenticate_by_key(self.api_key)

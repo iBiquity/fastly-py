@@ -44,7 +44,7 @@ class Connection(object):
         except ValueError:
             data = body
 
-        if response.status == 403:
+        if response.status == 401:
             raise AuthenticationError()
         elif response.status == 500:
             raise InternalServerError()

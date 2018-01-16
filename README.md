@@ -16,8 +16,11 @@ api.purge_url('www.example.com', '/some/path')
 ### TODO:
 
 Doc files
+
 Docstrings
+
 Config file
+
 
 ### Running Tests
 
