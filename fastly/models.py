@@ -1,9 +1,14 @@
 """
 """
 
-from string import Template
+import sys
 from copy import copy
-from urllib import urlencode
+from string import Template
+
+if sys.version_info[0] < 3:
+    from urllib import urlencode
+else:
+    from urllib.parse import urlencode
 
 class Model(object):
     def __init__(self):

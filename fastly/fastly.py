@@ -1,12 +1,11 @@
-import httplib
 import urllib
 import json
 import os
 
-from connection import *
-from auth import *
-from errors import *
-from models import *
+from .connection import *
+from .auth import *
+from .errors import *
+from .models import *
 
 class API(object):
     def __init__(self, host=os.environ.get('FASTLY_HOST', 'api.fastly.com'), secure=os.environ.get('FASTLY_SECURE', True), port=None, root='',
@@ -49,7 +48,7 @@ class API(object):
     def purge_url(self, host, path, soft=False):
         headers = {'Host':host}
         if soft:
-            headers['Fastly-Soft-Purge'] = 1
+            headers['Fastly-Soft-Purge'] = '1'
 
         resp, data = self.conn.request('PURGE', path, headers=headers)
         return resp.status == 200
@@ -57,11 +56,10 @@ class API(object):
     def soft_purge_url(self, host, path):
         return self.purge_url(host, path, True)
 
-
     def purge_service(self, service, soft=False):
         headers = {}
         if soft:
-            headers['Fastly-Soft-Purge'] = 1
+            headers['Fastly-Soft-Purge'] = '1'
 
         resp, data = self.conn.request('POST','/service/%s/purge_all' % service, headers=headers)
         return resp.status == 200
@@ -82,3 +80,7 @@ class API(object):
 
     def soft_purge_key(self, service, key):
         return self.purge_key(service, key, True)
+
+    def close(self):
+        if self.conn:
+            self.conn.close()

@@ -1,11 +1,14 @@
 """
 """
-
-import httplib
+import sys
+if sys.version_info[0] < 3:
+    from httplib import HTTPSConnection, HTTPConnection
+else:
+    from http.client import HTTPSConnection, HTTPConnection
 import json
-from _version import __version__
+from ._version import __version__
+from .errors import assert_response_status
 
-from errors import *
 
 class Connection(object):
     def __init__(self, host='api.fastly.com', secure=True, port=None, root='',
@@ -20,18 +23,18 @@ class Connection(object):
         self.http_conn = None
         self.default_headers = { 'User-Agent': 'fastly-py-v{}'.format(__version__) }
 
-    def request(self, method, path, body=None, headers={}):
+    def request(self, method, path, body=None, headers=None):
+        headers = headers if headers is not None else {}
         headers.update(self.default_headers)
 
         if not self.port:
             self.port = 443 if self.secure else 80
 
-        if self.secure:
-            self.http_conn = httplib.HTTPSConnection(self.host, self.port,
-                                           timeout=self.timeout)
-        else:
-            self.http_conn = httplib.HTTPConnection(self.host, self.port,
-                                          timeout=self.timeout)
+        connection = HTTPSConnection if self.secure else HTTPConnection
+        if not isinstance(self.http_conn, connection):
+            self.close()
+            self.http_conn = connection(self.host, self.port,
+                                        timeout=self.timeout)
 
         if self.authenticator:
             self.authenticator.add_auth(headers)
@@ -44,13 +47,9 @@ class Connection(object):
         except ValueError:
             data = body
 
-        if response.status == 401:
-            raise AuthenticationError()
-        elif response.status == 500:
-            raise InternalServerError()
-        elif response.status == 400:
-            raise BadRequestError(body)
-        elif response.status == 404:
-            raise NotFoundError()
-
+        assert_response_status(response.status, body)
         return (response, data)
+
+    def close(self):
+        if self.http_conn:
+            self.http_conn.close()
