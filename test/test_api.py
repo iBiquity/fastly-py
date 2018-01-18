@@ -1,17 +1,21 @@
 import unittest
 import os
 import fastly
-from fastly._version import __version__
+from fastly.fastly import API
+
 
 class APITest(unittest.TestCase):
 
     def setUp(self):
-        self.api = fastly.API()
+        self.api = API()
         self.host = os.environ.get('FASTLY_SERVICE_HOST', 'test.com')
         self.service_id = os.environ.get('FASTLY_SERVICE_ID', 'test.com')
         self.api_key = os.environ.get('FASTLY_API_KEY', 'TESTAPIKEY')
         self.user = os.environ.get('FASTLY_USER', 'foo@example.com')
         self.password = os.environ.get('FASTLY_PASSWORD', 'password')
+
+    def tearDown(self):
+        self.api.close()
 
     def test_purge(self):
         self.assertTrue(self.api.purge_url(self.host, '/'))
@@ -63,7 +67,8 @@ class APITest(unittest.TestCase):
 
     def test_sets_default_user_agent_header(self):
         default_headers = self.api.conn.default_headers
-        self.assertEqual(default_headers['User-Agent'], 'fastly-py-v{}'.format(__version__))
+        self.assertEqual(default_headers['User-Agent'],
+                         'fastly-py-v{}'.format(fastly._version.__version__))
 
 if __name__ == '__main__':
     unittest.main()
