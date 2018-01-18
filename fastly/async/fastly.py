@@ -91,17 +91,15 @@ class API(object):
     async def soft_purge_key(self, service, key):
         return await self.purge_key(service, key, True)
 
-    def close(self):
+    async def close(self):
         if self.conn:
-            self.conn.close()
+            await self.conn.close()
 
-    @asyncio.coroutine
-    def __aenter__(self):
+    async def __aenter__(self):
         return self
 
-    @asyncio.coroutine
-    def __aexit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
 
     def __enter__(self):
         # warning use async with instead
